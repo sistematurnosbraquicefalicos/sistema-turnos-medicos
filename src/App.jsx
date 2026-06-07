@@ -13,7 +13,7 @@ export default function App() {
   const [paso, setPaso] = useState(1);
 
   const CONTRASEÑA = 'braquicefalicos';
-  const GOOGLE_APPS_SCRIPT_URL = 'https://script.googleapis.com/macros/s/AKfycbzitOE6ojbW4fpKc-M49BlC6aOfE0XFDeopLIvtUIvXuUSC2MwwXl-n3U7HTzaWg7N9EQ/exec';
+  const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby39Gd8O8hZS4RYhAv4QYJPBYUFQnmMrPIxWsVIZAW078wXIeMJuUZt3WGyXZ1PV6CMpg/exec';
 
   const horarios = {
     Lunes: { medico: 'Dr. García', horas: ['09:00', '10:00', '11:00'] },
@@ -181,38 +181,4 @@ export default function App() {
                         key={hora}
                         type="button"
                         onClick={() => setDiaHora({ dia, hora })}
-                        style={{ padding: '6px 12px', margin: '5px', background: isSelected ? '#2196F3' : '#ddd', color: isSelected ? 'white' : 'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                      >
-                        {hora}
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            })}
-
-            <button type="button" onClick={() => setPaso(2)} style={{ width: '100%', padding: '12px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}>
-              Siguiente →
-            </button>
-          </div>
-        )}
-
-        {paso === 2 && (
-          <div>
-            <h2>Completa tu planilla médica</h2>
-            <textarea placeholder="Alergias" value={planilla.alergias} onChange={(e) => setPlanilla({ ...planilla, alergias: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} rows="3"></textarea>
-            <textarea placeholder="Medicamentos" value={planilla.medicamentos} onChange={(e) => setPlanilla({ ...planilla, medicamentos: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} rows="3"></textarea>
-            <textarea placeholder="Antecedentes" value={planilla.antecedentes} onChange={(e) => setPlanilla({ ...planilla, antecedentes: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} rows="3"></textarea>
-
-            <button type="button" onClick={() => setPaso(1)} style={{ padding: '12px 24px', background: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}>
-              ← Atrás
-            </button>
-            <button type="button" onClick={crearTurno} disabled={cargando} style={{ padding: '12px 24px', background: cargando ? '#999' : '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: cargando ? 'not-allowed' : 'pointer' }}>
-              {cargando ? '⏳ Guardando...' : '✅ Confirmar turno'}
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-}
+                        style={{ padding: '6px 12px', margin: '5px', background: isSelected ? '#2196F3' : '#ddd', color: isSelected ? 'white' : 'black',
