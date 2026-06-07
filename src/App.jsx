@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 export default function App() {
@@ -6,12 +6,14 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [turnos, setTurnos] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
   const [diaHora, setDiaHora] = useState(null);
   const [planilla, setPlanilla] = useState({ alergias: '', medicamentos: '', antecedentes: '' });
   const [paso, setPaso] = useState(1);
 
   const CONTRASEÑA = 'braquicefalicos';
+  const SHEETDB_URL = 'https://sheetdb.io/api/v1/ey5n5cdouz9mc';
 
   const horarios = {
     Lunes: { medico: 'Dr. García', horas: ['09:00', '10:00', '11:00'] },
@@ -19,6 +21,40 @@ export default function App() {
     Miércoles: { medico: 'Dr. Martínez', horas: ['14:00', '15:00', '16:00'] },
     Jueves: { medico: 'Dra. Silva', horas: ['09:00', '10:00', '11:00'] },
     Viernes: { medico: 'Dr. García', horas: ['10:00', '11:00', '14:00'] }
+  };
+
+  // Cargar turnos desde Google Sheets al montar
+  useEffect(() => {
+    cargarTurnos();
+  }, []);
+
+  const cargarTurnos = async () => {
+    try {
+      const response = await fetch(SHEETDB_URL);
+      const data = await response.json();
+      if (data && Array.isArray(data)) {
+        setTurnos(data);
+      }
+      setCargando(false);
+    } catch (error) {
+      console.log('No hay turnos aún o error al cargar', error);
+      setCargando(false);
+    }
+  };
+
+  const guardarEnSheets = async (turno) => {
+    try {
+      const response = await fetch(SHEETDB_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(turno)
+      });
+      if (response.ok) {
+        console.log('Turno guardado en Google Sheets');
+      }
+    } catch (error) {
+      console.log('Error al guardar en Sheets', error);
+    }
   };
 
   const handlePassword = (e) => {
@@ -33,26 +69,46 @@ export default function App() {
     }
   };
 
-  const crearTurno = () => {
+  const crearTurno = async () => {
     if (!form.nombre || !form.email || !diaHora) {
       alert('Completa todos los datos');
       return;
     }
-    const turno = {
+
+    const nuevoTurno = {
       id: Date.now(),
-      ...form,
-      ...diaHora,
+      nombre: form.nombre,
+      email: form.email,
+      telefono: form.telefono,
+      raza: form.raza,
+      peso: form.peso,
+      edad: form.edad,
+      dia: diaHora.dia,
+      hora: diaHora.hora,
       medico: horarios[diaHora.dia].medico,
       estado: 'Pendiente',
-      planilla
+      alergias: planilla.alergias,
+      medicamentos: planilla.medicamentos,
+      antecedentes: planilla.antecedentes,
+      fechaCreacion: new Date().toLocaleDateString()
     };
-    setTurnos([...turnos, turno]);
-    alert('✅ Turno creado exitosamente!');
+
+    // Guardar en Google Sheets
+    await guardarEnSheets(nuevoTurno);
+
+    // Agregar a la lista local
+    setTurnos([...turnos, nuevoTurno]);
+
+    alert('✅ Turno creado y guardado en Google Sheets!');
     setForm({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
     setDiaHora(null);
     setPlanilla({ alergias: '', medicamentos: '', antecedentes: '' });
     setPaso(1);
   };
+
+  if (cargando) {
+    return <div style={{ padding: '2rem', textAlign: 'center' }}><h2>⏳ Cargando turnos...</h2></div>;
+  }
 
   if (page === 'home') {
     return (
@@ -106,9 +162,9 @@ export default function App() {
               <details style={{ marginTop: '10px' }}>
                 <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>📋 Ver Planilla Médica</summary>
                 <div style={{ background: 'white', padding: '10px', marginTop: '10px', borderRadius: '4px' }}>
-                  <p><strong>Alergias:</strong> {t.planilla.alergias || '-'}</p>
-                  <p><strong>Medicamentos:</strong> {t.planilla.medicamentos || '-'}</p>
-                  <p><strong>Antecedentes:</strong> {t.planilla.antecedentes || '-'}</p>
+                  <p><strong>Alergias:</strong> {t.alergias || '-'}</p>
+                  <p><strong>Medicamentos:</strong> {t.medicamentos || '-'}</p>
+                  <p><strong>Antecedentes:</strong> {t.antecedentes || '-'}</p>
                 </div>
               </details>
             </div>
