@@ -13,6 +13,7 @@ export default function App() {
   const [paso, setPaso] = useState(1);
 
   const CONTRASEÑA = 'braquicefalicos';
+  const SHEETDB_URL = 'https://sheetdb.io/api/v1/ey5n5cdouz9mc';
 
   const horarios = {
     Lunes: { medico: 'Dr. García', horas: ['09:00', '10:00', '11:00'] },
@@ -24,6 +25,20 @@ export default function App() {
 
   const guardarEnSheets = async (turno) => {
     setCargando(true);
+    try {
+      const response = await fetch(SHEETDB_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: turno })
+      });
+      
+      if (response.ok) {
+        console.log('Turno guardado en Google Sheets');
+      }
+    } catch (error) {
+      console.log('Error con SheetDB:', error);
+    }
+    
     let turnosGuardados = JSON.parse(localStorage.getItem('turnos')) || [];
     turnosGuardados.push(turno);
     localStorage.setItem('turnos', JSON.stringify(turnosGuardados));
@@ -150,3 +165,28 @@ export default function App() {
                     const isSelected = diaHora && diaHora.dia === dia && diaHora.hora === hora;
                     return (
                       <button key={hora} type="button" onClick={() => setDiaHora({ dia, hora })} style={isSelected ? btnHoraSelected : btnHoraDefault}>{hora}</button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            <button type="button" onClick={() => setPaso(2)} style={{ ...btnStyle, width: '100%', padding: '12px', background: '#4CAF50', color: 'white', marginTop: '10px' }}>Siguiente</button>
+          </div>
+        )}
+
+        {paso === 2 && (
+          <div>
+            <h2>Planilla medica</h2>
+            <textarea placeholder="Alergias" value={planilla.alergias} onChange={(e) => setPlanilla({ ...planilla, alergias: e.target.value })} style={inputStyle} rows="3"></textarea>
+            <textarea placeholder="Medicamentos" value={planilla.medicamentos} onChange={(e) => setPlanilla({ ...planilla, medicamentos: e.target.value })} style={inputStyle} rows="3"></textarea>
+            <textarea placeholder="Antecedentes" value={planilla.antecedentes} onChange={(e) => setPlanilla({ ...planilla, antecedentes: e.target.value })} style={inputStyle} rows="3"></textarea>
+
+            <button type="button" onClick={() => setPaso(1)} style={{ ...btnStyle, padding: '12px 24px', background: '#999', color: 'white', marginRight: '10px' }}>Atras</button>
+            <button type="button" onClick={crearTurno} disabled={cargando} style={{ ...btnStyle, padding: '12px 24px', background: cargando ? '#999' : '#4CAF50', color: 'white' }}>{cargando ? 'Guardando...' : 'Confirmar'}</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+}
