@@ -97,7 +97,7 @@ export default function App() {
         {turnos.length === 0 ? (
           <p>No hay turnos aún</p>
         ) : (
-          turnos.map(t => (
+          turnos.map((t) => (
             <div key={t.id} style={{ background: '#f0f0f0', padding: '12px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }}>
               <p><strong>{t.nombre}</strong> - {t.dia} {t.hora}</p>
               <p>📧 {t.email} | 📱 {t.telefono}</p>
@@ -137,8 +137,50 @@ export default function App() {
             <input type="number" placeholder="Edad" value={form.edad} onChange={(e) => setForm({ ...form, edad: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
 
             <h2>Selecciona día y hora</h2>
-            {Object.entries(horarios).map(([dia, config]) => (
-              <div key={dia} style={{ background: '#f9f9f9', padding: '12px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }}>
-                <p><strong>{dia}</strong> - {config.medico}</p>
-                {config.horas.map(hora => (
-                  <button key={hora} type="button" onClick={
+            {Object.keys(horarios).map((dia) => {
+              const config = horarios[dia];
+              return (
+                <div key={dia} style={{ background: '#f9f9f9', padding: '12px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }}>
+                  <p><strong>{dia}</strong> - {config.medico}</p>
+                  {config.horas.map((hora) => {
+                    const isSelected = diaHora && diaHora.dia === dia && diaHora.hora === hora;
+                    return (
+                      <button
+                        key={hora}
+                        type="button"
+                        onClick={() => setDiaHora({ dia, hora })}
+                        style={{ padding: '6px 12px', margin: '5px', background: isSelected ? '#2196F3' : '#ddd', color: isSelected ? 'white' : 'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        {hora}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            <button type="button" onClick={() => setPaso(2)} style={{ width: '100%', padding: '12px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}>
+              Siguiente →
+            </button>
+          </div>
+        )}
+
+        {paso === 2 && (
+          <div>
+            <h2>Completa tu planilla médica</h2>
+            <textarea placeholder="Alergias" value={planilla.alergias} onChange={(e) => setPlanilla({ ...planilla, alergias: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} rows="3"></textarea>
+            <textarea placeholder="Medicamentos" value={planilla.medicamentos} onChange={(e) => setPlanilla({ ...planilla, medicamentos: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} rows="3"></textarea>
+            <textarea placeholder="Antecedentes" value={planilla.antecedentes} onChange={(e) => setPlanilla({ ...planilla, antecedentes: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} rows="3"></textarea>
+
+            <button type="button" onClick={() => setPaso(1)} style={{ padding: '12px 24px', background: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}>
+              ← Atrás
+            </button>
+            <button type="button" onClick={crearTurno} style={{ padding: '12px 24px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              ✅ Confirmar turno
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+}
