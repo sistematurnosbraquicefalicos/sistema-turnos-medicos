@@ -5,7 +5,7 @@ export default function App() {
   const [page, setPage] = useState('home');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
-  const [turnos, setTurnos] = useState([]);
+  const [turnos, setTurnos] = useState(() => JSON.parse(localStorage.getItem('turnos')) || []);
   const [cargando, setCargando] = useState(false);
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
   const [diaHora, setDiaHora] = useState(null);
@@ -13,7 +13,6 @@ export default function App() {
   const [paso, setPaso] = useState(1);
 
   const CONTRASEÑA = 'braquicefalicos';
-  const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby39Gd8O8hZS4RYhAv4QYJPBYUFQnmMrPIxWsVIZAW078wXIeMJuUZt3WGyXZ1PV6CMpg/exec';
 
   const horarios = {
     Lunes: { medico: 'Dr. García', horas: ['09:00', '10:00', '11:00'] },
@@ -29,17 +28,13 @@ export default function App() {
   const guardarEnSheets = async (turno) => {
     try {
       setCargando(true);
-      const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(turno)
-      });
-      if (response.ok) {
-        console.log('✅ Turno guardado en Google Sheets');
-      }
+      let turnosGuardados = JSON.parse(localStorage.getItem('turnos')) || [];
+      turnosGuardados.push(turno);
+      localStorage.setItem('turnos', JSON.stringify(turnosGuardados));
+      console.log('✅ Turno guardado localmente');
       setCargando(false);
     } catch (error) {
-      console.log('❌ Error al guardar', error);
+      console.log('❌ Error', error);
       setCargando(false);
     }
   };
@@ -82,7 +77,7 @@ export default function App() {
 
     await guardarEnSheets(nuevoTurno);
     setTurnos([...turnos, nuevoTurno]);
-    alert('✅ Turno guardado en Google Sheets!');
+    alert('✅ Turno creado!');
     setForm({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
     setDiaHora(null);
     setPlanilla({ alergias: '', medicamentos: '', antecedentes: '' });
@@ -134,73 +129,7 @@ export default function App() {
             <p><strong>{t.nombre}</strong> - {t.dia} {t.hora}</p>
             <p>📧 {t.email} | 📱 {t.telefono} | 🐕 {t.raza}</p>
             <p>👨‍⚕️ {t.medico} | {t.estado}</p>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (page === 'paciente') {
-    return (
-      <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-        <h1>📅 Solicitar Turno</h1>
-        <button onClick={() => setPage('home')} style={{ ...buttonStyle, background: '#f44336', color: 'white' }}>
-          Salir
-        </button>
-
-        {paso === 1 && (
-          <div>
-            <h2>Datos personales</h2>
-            <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} style={inputStyle} />
-            <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} style={inputStyle} />
-            <input type="tel" placeholder="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} style={inputStyle} />
-            <input type="text" placeholder="Raza" value={form.raza} onChange={(e) => setForm({ ...form, raza: e.target.value })} style={inputStyle} />
-            <input type="number" placeholder="Peso (kg)" value={form.peso} onChange={(e) => setForm({ ...form, peso: e.target.value })} style={inputStyle} />
-            <input type="number" placeholder="Edad" value={form.edad} onChange={(e) => setForm({ ...form, edad: e.target.value })} style={inputStyle} />
-
-            <h2>Selecciona día y hora</h2>
-            {Object.keys(horarios).map((dia) => (
-              <div key={dia} style={{ background: '#f9f9f9', padding: '12px', margin: '10px 0', borderRadius: '4px' }}>
-                <p><strong>{dia}</strong> - {horarios[dia].medico}</p>
-                {horarios[dia].horas.map((hora) => (
-                  <button
-                    key={hora}
-                    type="button"
-                    onClick={() => setDiaHora({ dia, hora })}
-                    style={{
-                      ...buttonStyle,
-                      background: diaHora?.dia === dia && diaHora?.hora === hora ? '#2196F3' : '#ddd',
-                      color: diaHora?.dia === dia && diaHora?.hora === hora ? 'white' : 'black'
-                    }}
-                  >
-                    {hora}
-                  </button>
-                ))}
-              </div>
-            ))}
-
-            <button type="button" onClick={() => setPaso(2)} style={{ ...buttonStyle, background: '#4CAF50', color: 'white', width: '100%' }}>
-              Siguiente →
-            </button>
-          </div>
-        )}
-
-        {paso === 2 && (
-          <div>
-            <h2>Planilla médica</h2>
-            <textarea placeholder="Alergias" value={planilla.alergias} onChange={(e) => setPlanilla({ ...planilla, alergias: e.target.value })} style={inputStyle} rows="3"></textarea>
-            <textarea placeholder="Medicamentos" value={planilla.medicamentos} onChange={(e) => setPlanilla({ ...planilla, medicamentos: e.target.value })} style={inputStyle} rows="3"></textarea>
-            <textarea placeholder="Antecedentes" value={planilla.antecedentes} onChange={(e) => setPlanilla({ ...planilla, antecedentes: e.target.value })} style={inputStyle} rows="3"></textarea>
-
-            <button type="button" onClick={() => setPaso(1)} style={{ ...buttonStyle, background: '#999', color: 'white' }}>
-              ← Atrás
-            </button>
-            <button type="button" onClick={crearTurno} disabled={cargando} style={{ ...buttonStyle, background: cargando ? '#999' : '#4CAF50', color: 'white' }}>
-              {cargando ? '⏳ Guardando...' : '✅ Confirmar'}
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-}
+            <details>
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>📋 Planilla</summary>
+              <div style={{ background: 'white', padding: '10px', marginTop: '10px' }}>
+                <p><strong>Alergias:</strong> {t.alergias || '-'}</p>
