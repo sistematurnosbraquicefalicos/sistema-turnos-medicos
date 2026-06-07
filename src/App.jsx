@@ -23,6 +23,9 @@ export default function App() {
     Viernes: { medico: 'Dr. García', horas: ['10:00', '11:00', '14:00'] }
   };
 
+  const buttonStyle = { padding: '8px 12px', margin: '5px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' };
+  const inputStyle = { width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' };
+
   const guardarEnSheets = async (turno) => {
     try {
       setCargando(true);
@@ -36,7 +39,7 @@ export default function App() {
       }
       setCargando(false);
     } catch (error) {
-      console.log('❌ Error al guardar en Sheets', error);
+      console.log('❌ Error al guardar', error);
       setCargando(false);
     }
   };
@@ -79,7 +82,7 @@ export default function App() {
 
     await guardarEnSheets(nuevoTurno);
     setTurnos([...turnos, nuevoTurno]);
-    alert('✅ Turno creado y guardado en Google Sheets!');
+    alert('✅ Turno guardado en Google Sheets!');
     setForm({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
     setDiaHora(null);
     setPlanilla({ alergias: '', medicamentos: '', antecedentes: '' });
@@ -90,10 +93,10 @@ export default function App() {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h1>🏥 Sistema de Turnos Médicos</h1>
-        <button onClick={() => setPage('login')} style={{ padding: '12px 24px', margin: '10px', fontSize: '16px', cursor: 'pointer', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={() => setPage('login')} style={{ ...buttonStyle, background: '#4CAF50', color: 'white', padding: '12px 24px', fontSize: '16px' }}>
           👨‍💼 Propietario
         </button>
-        <button onClick={() => setPage('paciente')} style={{ padding: '12px 24px', margin: '10px', fontSize: '16px', cursor: 'pointer', background: '#2196F3', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={() => setPage('paciente')} style={{ ...buttonStyle, background: '#2196F3', color: 'white', padding: '12px 24px', fontSize: '16px' }}>
           📅 Solicitar turno
         </button>
       </div>
@@ -105,13 +108,13 @@ export default function App() {
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h1>🔐 Acceso Propietario</h1>
         <form onSubmit={handlePassword} style={{ background: '#f9f9f9', padding: '2rem', borderRadius: '8px', maxWidth: '300px', margin: '0 auto' }}>
-          <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: passwordError ? '2px solid red' : '1px solid #ddd', boxSizing: 'border-box' }} />
-          {passwordError && <p style={{ color: 'red', fontSize: '14px' }}>❌ Contraseña incorrecta</p>}
-          <button type="submit" style={{ width: '100%', padding: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px', fontSize: '16px' }}>
+          <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
+          {passwordError && <p style={{ color: 'red' }}>❌ Incorrecta</p>}
+          <button type="submit" style={{ ...buttonStyle, background: '#4CAF50', color: 'white', width: '100%' }}>
             Ingresar
           </button>
         </form>
-        <button onClick={() => setPage('home')} style={{ padding: '10px 20px', background: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}>
+        <button onClick={() => setPage('home')} style={{ ...buttonStyle, background: '#999', color: 'white', marginTop: '20px' }}>
           ← Atrás
         </button>
       </div>
@@ -122,30 +125,17 @@ export default function App() {
     return (
       <div style={{ padding: '2rem' }}>
         <h1>🏥 Panel de Gestión</h1>
-        <button onClick={() => setPage('home')} style={{ padding: '8px 12px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        <button onClick={() => setPage('home')} style={{ ...buttonStyle, background: '#f44336', color: 'white' }}>
           Salir
         </button>
         <h2>📋 Turnos: {turnos.length}</h2>
-        {turnos.length === 0 ? (
-          <p>No hay turnos aún</p>
-        ) : (
-          turnos.map((t) => (
-            <div key={t.id} style={{ background: '#f0f0f0', padding: '12px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }}>
-              <p><strong>{t.nombre}</strong> - {t.dia} {t.hora}</p>
-              <p>📧 {t.email} | 📱 {t.telefono}</p>
-              <p>🐕 {t.raza} | ⚖️ {t.peso}kg | 📅 {t.edad} años</p>
-              <p>👨‍⚕️ Médico: {t.medico} | 🔔 Estado: {t.estado}</p>
-              <details style={{ marginTop: '10px' }}>
-                <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>📋 Ver Planilla Médica</summary>
-                <div style={{ background: 'white', padding: '10px', marginTop: '10px', borderRadius: '4px' }}>
-                  <p><strong>Alergias:</strong> {t.alergias || '-'}</p>
-                  <p><strong>Medicamentos:</strong> {t.medicamentos || '-'}</p>
-                  <p><strong>Antecedentes:</strong> {t.antecedentes || '-'}</p>
-                </div>
-              </details>
-            </div>
-          ))
-        )}
+        {turnos.length === 0 ? <p>Sin turnos</p> : turnos.map((t) => (
+          <div key={t.id} style={{ background: '#f0f0f0', padding: '12px', margin: '10px 0', borderRadius: '4px' }}>
+            <p><strong>{t.nombre}</strong> - {t.dia} {t.hora}</p>
+            <p>📧 {t.email} | 📱 {t.telefono} | 🐕 {t.raza}</p>
+            <p>👨‍⚕️ {t.medico} | {t.estado}</p>
+          </div>
+        ))}
       </div>
     );
   }
@@ -154,31 +144,63 @@ export default function App() {
     return (
       <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
         <h1>📅 Solicitar Turno</h1>
-        <button onClick={() => setPage('home')} style={{ padding: '8px 12px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        <button onClick={() => setPage('home')} style={{ ...buttonStyle, background: '#f44336', color: 'white' }}>
           Salir
         </button>
 
         {paso === 1 && (
           <div>
             <h2>Datos personales</h2>
-            <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="tel" placeholder="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="text" placeholder="Raza" value={form.raza} onChange={(e) => setForm({ ...form, raza: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="number" placeholder="Peso (kg)" value={form.peso} onChange={(e) => setForm({ ...form, peso: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="number" placeholder="Edad" value={form.edad} onChange={(e) => setForm({ ...form, edad: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+            <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} style={inputStyle} />
+            <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} style={inputStyle} />
+            <input type="tel" placeholder="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} style={inputStyle} />
+            <input type="text" placeholder="Raza" value={form.raza} onChange={(e) => setForm({ ...form, raza: e.target.value })} style={inputStyle} />
+            <input type="number" placeholder="Peso (kg)" value={form.peso} onChange={(e) => setForm({ ...form, peso: e.target.value })} style={inputStyle} />
+            <input type="number" placeholder="Edad" value={form.edad} onChange={(e) => setForm({ ...form, edad: e.target.value })} style={inputStyle} />
 
             <h2>Selecciona día y hora</h2>
-            {Object.keys(horarios).map((dia) => {
-              const config = horarios[dia];
-              return (
-                <div key={dia} style={{ background: '#f9f9f9', padding: '12px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }}>
-                  <p><strong>{dia}</strong> - {config.medico}</p>
-                  {config.horas.map((hora) => {
-                    const isSelected = diaHora && diaHora.dia === dia && diaHora.hora === hora;
-                    return (
-                      <button
-                        key={hora}
-                        type="button"
-                        onClick={() => setDiaHora({ dia, hora })}
-                        style={{ padding: '6px 12px', margin: '5px', background: isSelected ? '#2196F3' : '#ddd', color: isSelected ? 'white' : 'black',
+            {Object.keys(horarios).map((dia) => (
+              <div key={dia} style={{ background: '#f9f9f9', padding: '12px', margin: '10px 0', borderRadius: '4px' }}>
+                <p><strong>{dia}</strong> - {horarios[dia].medico}</p>
+                {horarios[dia].horas.map((hora) => (
+                  <button
+                    key={hora}
+                    type="button"
+                    onClick={() => setDiaHora({ dia, hora })}
+                    style={{
+                      ...buttonStyle,
+                      background: diaHora?.dia === dia && diaHora?.hora === hora ? '#2196F3' : '#ddd',
+                      color: diaHora?.dia === dia && diaHora?.hora === hora ? 'white' : 'black'
+                    }}
+                  >
+                    {hora}
+                  </button>
+                ))}
+              </div>
+            ))}
+
+            <button type="button" onClick={() => setPaso(2)} style={{ ...buttonStyle, background: '#4CAF50', color: 'white', width: '100%' }}>
+              Siguiente →
+            </button>
+          </div>
+        )}
+
+        {paso === 2 && (
+          <div>
+            <h2>Planilla médica</h2>
+            <textarea placeholder="Alergias" value={planilla.alergias} onChange={(e) => setPlanilla({ ...planilla, alergias: e.target.value })} style={inputStyle} rows="3"></textarea>
+            <textarea placeholder="Medicamentos" value={planilla.medicamentos} onChange={(e) => setPlanilla({ ...planilla, medicamentos: e.target.value })} style={inputStyle} rows="3"></textarea>
+            <textarea placeholder="Antecedentes" value={planilla.antecedentes} onChange={(e) => setPlanilla({ ...planilla, antecedentes: e.target.value })} style={inputStyle} rows="3"></textarea>
+
+            <button type="button" onClick={() => setPaso(1)} style={{ ...buttonStyle, background: '#999', color: 'white' }}>
+              ← Atrás
+            </button>
+            <button type="button" onClick={crearTurno} disabled={cargando} style={{ ...buttonStyle, background: cargando ? '#999' : '#4CAF50', color: 'white' }}>
+              {cargando ? '⏳ Guardando...' : '✅ Confirmar'}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+}
