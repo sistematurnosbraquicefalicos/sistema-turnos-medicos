@@ -6,14 +6,14 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [turnos, setTurnos] = useState([]);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(false);
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
   const [diaHora, setDiaHora] = useState(null);
   const [planilla, setPlanilla] = useState({ alergias: '', medicamentos: '', antecedentes: '' });
   const [paso, setPaso] = useState(1);
 
   const CONTRASEÑA = 'braquicefalicos';
-  const SHEETDB_URL = 'https://sheetdb.io/api/v1/ey5n5cdouz9mc';
+  const GOOGLE_APPS_SCRIPT_URL = 'https://script.googleapis.com/macros/s/AKfycbzitOE6ojbW4fpKc-M49BlC6aOfE0XFDeopLIvtUIvXuUSC2MwwXl-n3U7HTzaWg7N9EQ/exec';
 
   const horarios = {
     Lunes: { medico: 'Dr. García', horas: ['09:00', '10:00', '11:00'] },
@@ -23,37 +23,21 @@ export default function App() {
     Viernes: { medico: 'Dr. García', horas: ['10:00', '11:00', '14:00'] }
   };
 
-  // Cargar turnos desde Google Sheets al montar
-  useEffect(() => {
-    cargarTurnos();
-  }, []);
-
-  const cargarTurnos = async () => {
-    try {
-      const response = await fetch(SHEETDB_URL);
-      const data = await response.json();
-      if (data && Array.isArray(data)) {
-        setTurnos(data);
-      }
-      setCargando(false);
-    } catch (error) {
-      console.log('No hay turnos aún o error al cargar', error);
-      setCargando(false);
-    }
-  };
-
   const guardarEnSheets = async (turno) => {
     try {
-      const response = await fetch(SHEETDB_URL, {
+      setCargando(true);
+      const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(turno)
       });
       if (response.ok) {
-        console.log('Turno guardado en Google Sheets');
+        console.log('✅ Turno guardado en Google Sheets');
       }
+      setCargando(false);
     } catch (error) {
-      console.log('Error al guardar en Sheets', error);
+      console.log('❌ Error al guardar en Sheets', error);
+      setCargando(false);
     }
   };
 
@@ -105,10 +89,6 @@ export default function App() {
     setPlanilla({ alergias: '', medicamentos: '', antecedentes: '' });
     setPaso(1);
   };
-
-  if (cargando) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}><h2>⏳ Cargando turnos...</h2></div>;
-  }
 
   if (page === 'home') {
     return (
@@ -231,8 +211,8 @@ export default function App() {
             <button type="button" onClick={() => setPaso(1)} style={{ padding: '12px 24px', background: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}>
               ← Atrás
             </button>
-            <button type="button" onClick={crearTurno} style={{ padding: '12px 24px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              ✅ Confirmar turno
+            <button type="button" onClick={crearTurno} disabled={cargando} style={{ padding: '12px 24px', background: cargando ? '#999' : '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: cargando ? 'not-allowed' : 'pointer' }}>
+              {cargando ? '⏳ Guardando...' : '✅ Confirmar turno'}
             </button>
           </div>
         )}
