@@ -3,11 +3,15 @@ import './App.css';
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
   const [turnos, setTurnos] = useState([]);
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
   const [diaHora, setDiaHora] = useState(null);
   const [planilla, setPlanilla] = useState({ alergias: '', medicamentos: '', antecedentes: '' });
   const [paso, setPaso] = useState(1);
+
+  const CONTRASEÑA_PROPIETARIO = '1234'; // Cambiar por tu contraseña
 
   const horarios = {
     Lunes: { medico: 'Dr. García', horas: ['09:00', '10:00', '11:00'] },
@@ -15,6 +19,17 @@ export default function App() {
     Miércoles: { medico: 'Dr. Martínez', horas: ['14:00', '15:00', '16:00'] },
     Jueves: { medico: 'Dra. Silva', horas: ['09:00', '10:00', '11:00'] },
     Viernes: { medico: 'Dr. García', horas: ['10:00', '11:00', '14:00'] }
+  };
+
+  const verificarContraseña = () => {
+    if (password === CONTRASEÑA_PROPIETARIO) {
+      setUser('propietario');
+      setPassword('');
+      setPasswordError(false);
+    } else {
+      setPasswordError(true);
+      setPassword('');
+    }
   };
 
   const crearTurno = () => {
@@ -42,12 +57,38 @@ export default function App() {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h1>🏥 Sistema de Turnos Médicos</h1>
-        <button onClick={() => setUser('propietario')} style={{ padding: '12px 24px', margin: '10px', fontSize: '16px', cursor: 'pointer', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>
-          👨‍💼 Propietario
-        </button>
-        <button onClick={() => setUser('paciente')} style={{ padding: '12px 24px', margin: '10px', fontSize: '16px', cursor: 'pointer', background: '#2196F3', color: 'white', border: 'none', borderRadius: '4px' }}>
-          👨‍⚕️ Paciente
-        </button>
+        
+        {user !== 'login' && (
+          <div>
+            <button onClick={() => setUser('login')} style={{ padding: '12px 24px', margin: '10px', fontSize: '16px', cursor: 'pointer', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>
+              👨‍💼 Propietario
+            </button>
+            <button onClick={() => setUser('paciente')} style={{ padding: '12px 24px', margin: '10px', fontSize: '16px', cursor: 'pointer', background: '#2196F3', color: 'white', border: 'none', borderRadius: '4px' }}>
+              📅 Sacar turno
+            </button>
+          </div>
+        )}
+
+        {user === 'login' && (
+          <div style={{ background: '#f9f9f9', padding: '2rem', borderRadius: '8px', maxWidth: '300px', margin: '0 auto' }}>
+            <h2>🔐 Acceso Propietario</h2>
+            <input 
+              type="password" 
+              placeholder="Contraseña" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && verificarContraseña()}
+              style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: passwordError ? '2px solid red' : '1px solid #ddd' }}
+            />
+            {passwordError && <p style={{ color: 'red', fontSize: '12px' }}>❌ Contraseña incorrecta</p>}
+            <button onClick={verificarContraseña} style={{ width: '100%', padding: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>
+              Ingresar
+            </button>
+            <button onClick={() => { setUser(null); setPassword(''); setPasswordError(false); }} style={{ width: '100%', padding: '10px', background: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>
+              Atrás
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -63,7 +104,17 @@ export default function App() {
         {turnos.map(t => (
           <div key={t.id} style={{ background: '#f0f0f0', padding: '12px', margin: '10px 0', borderRadius: '4px' }}>
             <p><strong>{t.nombre}</strong> - {t.dia} {t.hora}</p>
+            <p>Email: {t.email} | Teléfono: {t.telefono}</p>
+            <p>Raza: {t.raza} | Peso: {t.peso}kg | Edad: {t.edad}</p>
             <p>Médico: {t.medico} | Estado: {t.estado}</p>
+            <details style={{ marginTop: '10px' }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>📋 Ver Planilla</summary>
+              <div style={{ background: 'white', padding: '10px', marginTop: '10px', borderRadius: '4px' }}>
+                <p><strong>Alergias:</strong> {t.planilla.alergias || '-'}</p>
+                <p><strong>Medicamentos:</strong> {t.planilla.medicamentos || '-'}</p>
+                <p><strong>Antecedentes:</strong> {t.planilla.antecedentes || '-'}</p>
+              </div>
+            </details>
           </div>
         ))}
       </div>
@@ -73,7 +124,7 @@ export default function App() {
   if (user === 'paciente') {
     return (
       <div style={{ padding: '2rem', maxWidth: '600px' }}>
-        <h1>👨‍⚕️ Reservar Turno</h1>
+        <h1>📅 Sacar Turno</h1>
         <button onClick={() => setUser(null)} style={{ padding: '8px 12px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           Salir
         </button>
@@ -101,27 +152,4 @@ export default function App() {
             ))}
 
             <button onClick={() => setPaso(2)} style={{ width: '100%', padding: '12px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}>
-              Siguiente →
-            </button>
-          </div>
-        )}
-
-        {paso === 2 && (
-          <div>
-            <h2>Completa tu planilla</h2>
-            <textarea placeholder="Alergias" value={planilla.alergias} onChange={(e) => setPlanilla({ ...planilla, alergias: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }} rows="3" />
-            <textarea placeholder="Medicamentos" value={planilla.medicamentos} onChange={(e) => setPlanilla({ ...planilla, medicamentos: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }} rows="3" />
-            <textarea placeholder="Antecedentes" value={planilla.antecedentes} onChange={(e) => setPlanilla({ ...planilla, antecedentes: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }} rows="3" />
-
-            <button onClick={() => setPaso(1)} style={{ padding: '12px 24px', background: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}>
-              ← Atrás
-            </button>
-            <button onClick={crearTurno} style={{ padding: '12px 24px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              ✅ Confirmar turno
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-}
+              Siguien
