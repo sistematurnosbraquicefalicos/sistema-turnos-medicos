@@ -54,7 +54,6 @@ export default function App() {
     setPaso(1);
   };
 
-  // HOME
   if (page === 'home') {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
@@ -63,25 +62,18 @@ export default function App() {
           👨‍💼 Propietario
         </button>
         <button onClick={() => setPage('paciente')} style={{ padding: '12px 24px', margin: '10px', fontSize: '16px', cursor: 'pointer', background: '#2196F3', color: 'white', border: 'none', borderRadius: '4px' }}>
-          📅 Sacar turno
+          📅 Solicitar turno
         </button>
       </div>
     );
   }
 
-  // LOGIN
   if (page === 'login') {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h1>🔐 Acceso Propietario</h1>
         <form onSubmit={handlePassword} style={{ background: '#f9f9f9', padding: '2rem', borderRadius: '8px', maxWidth: '300px', margin: '0 auto' }}>
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: passwordError ? '2px solid red' : '1px solid #ddd', boxSizing: 'border-box' }}
-          />
+          <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: passwordError ? '2px solid red' : '1px solid #ddd', boxSizing: 'border-box' }} />
           {passwordError && <p style={{ color: 'red', fontSize: '14px' }}>❌ Contraseña incorrecta</p>}
           <button type="submit" style={{ width: '100%', padding: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px', fontSize: '16px' }}>
             Ingresar
@@ -94,7 +86,6 @@ export default function App() {
     );
   }
 
-  // PROPIETARIO
   if (page === 'propietario') {
     return (
       <div style={{ padding: '2rem' }}>
@@ -127,11 +118,10 @@ export default function App() {
     );
   }
 
-  // PACIENTE
   if (page === 'paciente') {
     return (
       <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-        <h1>📅 Sacar Turno</h1>
+        <h1>📅 Solicitar Turno</h1>
         <button onClick={() => setPage('home')} style={{ padding: '8px 12px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           Salir
         </button>
@@ -139,7 +129,16 @@ export default function App() {
         {paso === 1 && (
           <div>
             <h2>Datos personales</h2>
-            <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) = /> setForm({ ...form, nombre: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="email" placeholder="Email" value={form.email} onChange={(e) = /> setForm({ ...form, email: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="tel" placeholder="Teléfono" value={form.telefono} onChange={(e) = /> setForm({ ...form, telefono: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
-            <input type="text" placeholder="Raza" value={form.raza} onChange={(e) = /> setForm({ ...form, raza: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+            <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+            <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+            <input type="tel" placeholder="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+            <input type="text" placeholder="Raza" value={form.raza} onChange={(e) => setForm({ ...form, raza: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+            <input type="number" placeholder="Peso (kg)" value={form.peso} onChange={(e) => setForm({ ...form, peso: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+            <input type="number" placeholder="Edad" value={form.edad} onChange={(e) => setForm({ ...form, edad: e.target.value })} style={{ width: '100%', padding: '8px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd', boxSizing: 'border-box' }} />
+
+            <h2>Selecciona día y hora</h2>
+            {Object.entries(horarios).map(([dia, config]) => (
+              <div key={dia} style={{ background: '#f9f9f9', padding: '12px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ddd' }}>
+                <p><strong>{dia}</strong> - {config.medico}</p>
+                {config.horas.map(hora => (
+                  <button key={hora} type="button" onClick={
