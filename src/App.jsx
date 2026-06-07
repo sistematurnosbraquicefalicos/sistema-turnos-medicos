@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 export default function App() {
@@ -77,12 +77,8 @@ export default function App() {
       fechaCreacion: new Date().toLocaleDateString()
     };
 
-    // Guardar en Google Sheets
     await guardarEnSheets(nuevoTurno);
-
-    // Agregar a la lista local
     setTurnos([...turnos, nuevoTurno]);
-
     alert('✅ Turno creado y guardado en Google Sheets!');
     setForm({ nombre: '', email: '', telefono: '', raza: '', peso: '', edad: '' });
     setDiaHora(null);
