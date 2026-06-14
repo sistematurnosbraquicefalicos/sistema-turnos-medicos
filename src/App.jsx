@@ -20,7 +20,8 @@ export default function App() {
   
   // Estados para edición
   const [editandoTurno, setEditandoTurno] = useState(null);
-  const [editandoDoctor, setEditandoDoctor] = useState(null);
+  const [editandoDoctorId, setEditandoDoctorId] = useState(null);
+  const [editandoDoctorNombre, setEditandoDoctorNombre] = useState('');
   const [editandoHorario, setEditandoHorario] = useState(null);
   const [nuevoDoctor, setNuevoDoctor] = useState('');
   const [nuevoHorarioForm, setNuevoHorarioForm] = useState({ doctor: '', semana: '', dia: '', hora: '' });
@@ -43,7 +44,7 @@ export default function App() {
       const response = await fetch(SHEETDB_URL);
       if (response.ok) {
         const data = await response.json();
-        const turnosFiltrados = data.data.filter(item => !item.tipo || item.tipo !== 'horario_disponible' && item.tipo !== 'doctor');
+        const turnosFiltrados = data.data.filter(item => !item.tipo || (item.tipo !== 'horario_disponible' && item.tipo !== 'doctor'));
         setTurnos(turnosFiltrados);
       }
     } catch (error) {
@@ -60,6 +61,7 @@ export default function App() {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log('Horarios cargados:', data.data);
         setHorariosDisponibles(data.data || []);
       }
     } catch (error) {
@@ -76,6 +78,7 @@ export default function App() {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log('Doctores cargados:', data.data);
         setDoctores(data.data || []);
       }
     } catch (error) {
@@ -158,12 +161,26 @@ export default function App() {
     }
   };
 
-  const actualizarDoctor = async (id, nuevoNombre) => {
-    if (await actualizarEnSheets(id, { nombre: nuevoNombre })) {
-      setDoctores(doctores.map(d => d.id === id ? { ...d, nombre: nuevoNombre } : d));
-      setEditandoDoctor(null);
+  const iniciarEditarDoctor = (doctor) => {
+    setEditandoDoctorId(doctor.id);
+    setEditandoDoctorNombre(doctor.nombre);
+  };
+
+  const confirmarEditarDoctor = async () => {
+    if (!editandoDoctorNombre.trim()) {
+      alert('El nombre no puede estar vacío');
+      return;
+    }
+    if (await actualizarEnSheets(editandoDoctorId, { nombre: editandoDoctorNombre })) {
+      setDoctores(doctores.map(d => d.id === editandoDoctorId ? { ...d, nombre: editandoDoctorNombre } : d));
+      setEditandoDoctorId(null);
       alert('Doctor actualizado');
     }
+  };
+
+  const cancelarEditarDoctor = () => {
+    setEditandoDoctorId(null);
+    setEditandoDoctorNombre('');
   };
 
   const eliminarDoctor = async (id) => {
@@ -184,25 +201,18 @@ export default function App() {
     const horario = {
       id: Date.now(),
       doctor: nuevoHorarioForm.doctor,
-      semana: nuevoHorarioForm.semana,
+      semana: String(nuevoHorarioForm.semana),
       dia: nuevoHorarioForm.dia,
       hora: nuevoHorarioForm.hora,
       tipo: 'horario_disponible',
       fechaCreacion: new Date().toLocaleDateString()
     };
 
+    console.log('Guardando horario:', horario);
     if (await guardarEnSheets(horario)) {
       setHorariosDisponibles([...horariosDisponibles, horario]);
       setNuevoHorarioForm({ doctor: '', semana: '', dia: '', hora: '' });
       alert('Horario creado');
-    }
-  };
-
-  const actualizarHorario = async (id, cambios) => {
-    if (await actualizarEnSheets(id, cambios)) {
-      setHorariosDisponibles(horariosDisponibles.map(h => h.id === id ? { ...h, ...cambios } : h));
-      setEditandoHorario(null);
-      alert('Horario actualizado');
     }
   };
 
@@ -345,9 +355,12 @@ export default function App() {
       <div style={{ background: FONDO_VIOLETA, minHeight: '100vh' }}>
         <Header />
         <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '10px' }}>
             <h1 style={{ fontSize: '28px' }}>Panel de Admin</h1>
-            <button onClick={() => setPage('home')} style={{ ...btnStyle, padding: '8px 12px', background: '#f44336', color: 'white', fontSize: '16px' }}>Salir</button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={cargarDatos} style={{ ...btnStyle, padding: '10px 20px', background: '#FF9800', color: 'white', fontSize: '16px', fontWeight: 'bold' }}>🔄 Recargar datos</button>
+              <button onClick={() => setPage('home')} style={{ ...btnStyle, padding: '8px 12px', background: '#f44336', color: 'white', fontSize: '16px' }}>Salir</button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -407,12 +420,11 @@ export default function App() {
                           <td style={{ padding: '12px', textAlign: 'center' }}>
                             {editandoTurno === t.id ? (
                               <div style={{ fontSize: '14px' }}>
-                                <select value={editandoTurno ? turnos.find(x => x.id === editandoTurno)?.estado : t.estado} onChange={(e) => actualizarTurno(t.id, { estado: e.target.value })} style={{ ...inputStyle, margin: '5px 0' }}>
+                                <select value={t.estado} onChange={(e) => actualizarTurno(t.id, { estado: e.target.value })} style={{ ...inputStyle, margin: '5px 0' }}>
                                   <option>Pendiente</option>
                                   <option>Confirmado</option>
                                   <option>Rechazado</option>
                                 </select>
-                                <button onClick={() => setEditandoTurno(null)} style={{ ...btnStyle, padding: '6px 12px', background: '#999', color: 'white', fontSize: '14px', marginRight: '5px' }}>Listo</button>
                               </div>
                             ) : (
                               <>
@@ -454,22 +466,30 @@ export default function App() {
               ) : (
                 <div style={{ display: 'grid', gap: '1rem' }}>
                   {doctores.map((d) => (
-                    <div key={d.id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '8px', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      {editandoDoctor === d.id ? (
-                        <input 
-                          type="text" 
-                          defaultValue={d.nombre} 
-                          onBlur={(e) => actualizarDoctor(d.id, e.target.value)} 
-                          style={{...inputStyle, margin: 0}} 
-                          autoFocus 
-                        />
+                    <div key={d.id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '8px', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                      {editandoDoctorId === d.id ? (
+                        <>
+                          <input 
+                            type="text" 
+                            value={editandoDoctorNombre} 
+                            onChange={(e) => setEditandoDoctorNombre(e.target.value)} 
+                            style={{...inputStyle, margin: 0, flex: 1}} 
+                            autoFocus 
+                          />
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button onClick={confirmarEditarDoctor} style={{ ...btnStyle, padding: '8px 16px', background: '#4CAF50', color: 'white', fontSize: '14px' }}>✓ Guardar</button>
+                            <button onClick={cancelarEditarDoctor} style={{ ...btnStyle, padding: '8px 16px', background: '#999', color: 'white', fontSize: '14px' }}>✕ Cancelar</button>
+                          </div>
+                        </>
                       ) : (
-                        <h3 style={{ fontSize: '20px', margin: 0 }}>{d.nombre}</h3>
+                        <>
+                          <h3 style={{ fontSize: '20px', margin: 0, flex: 1 }}>{d.nombre}</h3>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button onClick={() => iniciarEditarDoctor(d)} style={{ ...btnStyle, padding: '8px 16px', background: '#2196F3', color: 'white', fontSize: '14px' }}>✏️ Editar</button>
+                            <button onClick={() => eliminarDoctor(d.id)} style={{ ...btnStyle, padding: '8px 16px', background: '#f44336', color: 'white', fontSize: '14px' }}>🗑️ Eliminar</button>
+                          </div>
+                        </>
                       )}
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button onClick={() => setEditandoDoctor(editandoDoctor === d.id ? null : d.id)} style={{ ...btnStyle, padding: '8px 16px', background: '#2196F3', color: 'white', fontSize: '14px' }}>✏️ Editar</button>
-                        <button onClick={() => eliminarDoctor(d.id)} style={{ ...btnStyle, padding: '8px 16px', background: '#f44336', color: 'white', fontSize: '14px' }}>🗑️ Eliminar</button>
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -481,6 +501,7 @@ export default function App() {
           {adminTab === 'horarios' && (
             <>
               <h2 style={{ fontSize: '22px' }}>Horarios por Semana</h2>
+              <p style={{ color: '#666', fontSize: '16px', fontStyle: 'italic' }}>Semana 1-52 del año | Día | Hora</p>
               
               <div style={{ background: '#f9f9f9', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '20px', marginBottom: '1rem' }}>Crear nuevo horario</h3>
@@ -491,8 +512,8 @@ export default function App() {
                   {doctores.map(d => <option key={d.id} value={d.nombre}>{d.nombre}</option>)}
                 </select>
 
-                <label style={labelStyle}>Semana (ej: 25)</label>
-                <input type="number" placeholder="Número de semana (1-52)" min="1" max="52" value={nuevoHorarioForm.semana} onChange={(e) => setNuevoHorarioForm({ ...nuevoHorarioForm, semana: e.target.value })} style={inputStyle} />
+                <label style={labelStyle}>Semana del año (1-52)</label>
+                <input type="number" placeholder="Semana" min="1" max="52" value={nuevoHorarioForm.semana} onChange={(e) => setNuevoHorarioForm({ ...nuevoHorarioForm, semana: e.target.value })} style={inputStyle} />
 
                 <label style={labelStyle}>Día</label>
                 <select value={nuevoHorarioForm.dia} onChange={(e) => setNuevoHorarioForm({ ...nuevoHorarioForm, dia: e.target.value })} style={inputStyle}>
@@ -528,11 +549,10 @@ export default function App() {
                       {horariosDisponibles.map((h) => (
                         <tr key={h.id} style={{ borderBottom: '1px solid #eee' }}>
                           <td style={{ padding: '12px', fontSize: '16px' }}>{h.doctor}</td>
-                          <td style={{ padding: '12px', fontSize: '16px' }}>Semana {h.semana}</td>
+                          <td style={{ padding: '12px', fontSize: '16px' }}>{h.semana}</td>
                           <td style={{ padding: '12px', fontSize: '16px' }}>{h.dia}</td>
                           <td style={{ padding: '12px', fontSize: '16px' }}>{h.hora}</td>
                           <td style={{ padding: '12px', textAlign: 'center' }}>
-                            <button onClick={() => setEditandoHorario(editandoHorario === h.id ? null : h.id)} style={{ ...btnStyle, padding: '6px 12px', background: '#2196F3', color: 'white', fontSize: '14px', marginRight: '5px' }}>✏️ Editar</button>
                             <button onClick={() => eliminarHorario(h.id)} style={{ ...btnStyle, padding: '6px 12px', background: '#f44336', color: 'white', fontSize: '14px' }}>🗑️ Eliminar</button>
                           </td>
                         </tr>
@@ -582,7 +602,7 @@ export default function App() {
 
               <h2 style={{ fontSize: '22px', marginTop: '1.5rem' }}>Selecciona día y hora</h2>
               {horariosDisponibles.length === 0 ? (
-                <p style={{ fontSize: '16px', color: '#999' }}>No hay horarios disponibles en este momento.</p>
+                <p style={{ fontSize: '16px', color: '#333', background: '#fff3cd', padding: '1rem', borderRadius: '4px', border: '1px solid #ffc107' }}>❌ No hay horarios disponibles en este momento. Comunícate con la clínica.</p>
               ) : (
                 <div>
                   {horariosDisponibles.map((h, idx) => {
@@ -611,7 +631,7 @@ export default function App() {
                 </div>
               )}
 
-              <button type="button" onClick={() => setPaso(2)} style={{ ...btnStyle, width: '100%', padding: '14px', background: '#4CAF50', color: 'white', marginTop: '10px', fontSize: '18px', fontWeight: 'bold' }}>Siguiente</button>
+              <button type="button" onClick={() => setPaso(2)} disabled={!diaHoraSeleccionado} style={{ ...btnStyle, width: '100%', padding: '14px', background: diaHoraSeleccionado ? '#4CAF50' : '#ccc', color: 'white', marginTop: '10px', fontSize: '18px', fontWeight: 'bold', cursor: diaHoraSeleccionado ? 'pointer' : 'not-allowed' }}>Siguiente</button>
             </div>
           )}
 
