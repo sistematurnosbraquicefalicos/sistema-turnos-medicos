@@ -36,53 +36,25 @@ export default function App() {
   }, []);
 
   const cargarDatos = async () => {
-    await Promise.all([cargarTurnos(), cargarHorarios(), cargarDoctores()]);
-  };
-
-  const cargarTurnos = async () => {
     try {
       const response = await fetch(SHEETDB_URL);
-      if (response.ok) {
-        const data = await response.json();
-        const turnosFiltrados = data.data.filter(item => !item.tipo || (item.tipo !== 'horario_disponible' && item.tipo !== 'doctor'));
-        setTurnos(turnosFiltrados);
-      }
-    } catch (error) {
-      console.log('Error cargando turnos:', error);
-    }
-  };
+      if (!response.ok) throw new Error('Error fetching data');
+      
+      const data = await response.json();
+      const todos = data.data || [];
 
-  const cargarHorarios = async () => {
-    try {
-      const response = await fetch(`${SHEETDB_URL}/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ search: { tipo: 'horario_disponible' } })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Horarios cargados:', data.data);
-        setHorariosDisponibles(data.data || []);
-      }
-    } catch (error) {
-      console.log('Error cargando horarios:', error);
-    }
-  };
+      // Filtrar por tipo
+      const turnosFiltrados = todos.filter(item => !item.tipo || (item.tipo !== 'horario_disponible' && item.tipo !== 'doctor'));
+      const horariosFiltrados = todos.filter(item => item.tipo === 'horario_disponible');
+      const doctoresFiltrados = todos.filter(item => item.tipo === 'doctor');
 
-  const cargarDoctores = async () => {
-    try {
-      const response = await fetch(`${SHEETDB_URL}/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ search: { tipo: 'doctor' } })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Doctores cargados:', data.data);
-        setDoctores(data.data || []);
-      }
+      setTurnos(turnosFiltrados);
+      setHorariosDisponibles(horariosFiltrados);
+      setDoctores(doctoresFiltrados);
+
+      console.log('✅ Datos cargados:', { turnos: turnosFiltrados.length, horarios: horariosFiltrados.length, doctores: doctoresFiltrados.length });
     } catch (error) {
-      console.log('Error cargando doctores:', error);
+      console.error('Error cargando datos:', error);
     }
   };
 
@@ -270,7 +242,7 @@ export default function App() {
       edad: form.edad,
       dia: diaHoraSeleccionado.dia,
       hora: diaHoraSeleccionado.hora,
-      medico: diaHoraSeleccionado.medico,
+      medico: diaHoraSeleccionado.doctor,
       estado: 'Pendiente',
       alergias: planilla.alergias,
       medicamentos: planilla.medicamentos,
@@ -293,6 +265,7 @@ export default function App() {
       setDiaHoraSeleccionado(null);
       setPlanilla({ alergias: '', medicamentos: '', antecedentes: '' });
       setPaso(1);
+      setPage('home');
     }
     setCargando(false);
   };
