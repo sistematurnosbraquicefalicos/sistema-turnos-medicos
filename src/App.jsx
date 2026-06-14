@@ -21,7 +21,6 @@ export default function App() {
   const [editandoTurno, setEditandoTurno] = useState(null);
   const [editandoDoctorId, setEditandoDoctorId] = useState(null);
   const [editandoDoctorNombre, setEditandoDoctorNombre] = useState('');
-  const [editandoHorario, setEditandoHorario] = useState(null);
   const [nuevoDoctor, setNuevoDoctor] = useState('');
   const [nuevoHorarioForm, setNuevoHorarioForm] = useState({ doctor: '', semana: '', dia: '', hora: '' });
 
