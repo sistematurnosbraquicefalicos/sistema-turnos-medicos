@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import './App.css';
 import emailjs from '@emailjs/browser';
 
@@ -18,7 +18,6 @@ export default function App() {
   const [paso, setPaso] = useState(1);
   const [adminTab, setAdminTab] = useState('turnos');
   
-  // Estados para edición
   const [editandoTurno, setEditandoTurno] = useState(null);
   const [editandoDoctorId, setEditandoDoctorId] = useState(null);
   const [editandoDoctorNombre, setEditandoDoctorNombre] = useState('');
@@ -43,7 +42,6 @@ export default function App() {
       const data = await response.json();
       const todos = data.data || [];
 
-      // Filtrar por tipo
       const turnosFiltrados = todos.filter(item => !item.tipo || (item.tipo !== 'horario_disponible' && item.tipo !== 'doctor'));
       const horariosFiltrados = todos.filter(item => item.tipo === 'horario_disponible');
       const doctoresFiltrados = todos.filter(item => item.tipo === 'doctor');
@@ -289,7 +287,6 @@ export default function App() {
     return '#FF9800';
   };
 
-  // HOME
   if (page === 'home') {
     return (
       <div style={{ background: FONDO_VIOLETA, minHeight: '100vh' }}>
@@ -303,7 +300,6 @@ export default function App() {
     );
   }
 
-  // LOGIN
   if (page === 'login') {
     return (
       <div style={{ background: FONDO_VIOLETA, minHeight: '100vh' }}>
@@ -322,7 +318,6 @@ export default function App() {
     );
   }
 
-  // ADMIN PANEL
   if (page === 'admin') {
     return (
       <div style={{ background: FONDO_VIOLETA, minHeight: '100vh' }}>
@@ -336,7 +331,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Tabs */}
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '2px solid #ddd', flexWrap: 'wrap' }}>
             <button 
               onClick={() => setAdminTab('turnos')}
@@ -358,7 +352,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* TAB TURNOS */}
           {adminTab === 'turnos' && (
             <>
               <h2 style={{ fontSize: '22px' }}>Total de Turnos: {turnos.length}</h2>
@@ -415,7 +408,6 @@ export default function App() {
             </>
           )}
 
-          {/* TAB DOCTORES */}
           {adminTab === 'doctores' && (
             <>
               <h2 style={{ fontSize: '22px' }}>Gestionar Doctores</h2>
@@ -470,7 +462,6 @@ export default function App() {
             </>
           )}
 
-          {/* TAB HORARIOS */}
           {adminTab === 'horarios' && (
             <>
               <h2 style={{ fontSize: '22px' }}>Horarios por Semana</h2>
@@ -541,7 +532,6 @@ export default function App() {
     );
   }
 
-  // PACIENTE
   if (page === 'paciente') {
     return (
       <div style={{ background: FONDO_VIOLETA, minHeight: '100vh' }}>
